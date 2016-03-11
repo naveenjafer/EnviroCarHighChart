@@ -1,0 +1,151 @@
+
+<!DOCTYPE html>
+<html ng-app="myapp">
+<head>
+  <script src="http://code.highcharts.com/adapters/standalone-framework.js"></script>
+  <script src="http://code.highcharts.com/stock/highstock.src.js"></script>
+  <script src="/scripts/angular.min.js"></script>
+  <script src="/scripts/jquery-1.7.1.min.js"></script>
+  <script src="/scripts/highcharts-ng.js"></script>
+
+
+<script src="http://code.highcharts.com/highcharts.src.js"></script>
+<script>
+//See: https://github.com/pablojim/highcharts-ng
+var myapp = angular.module('myapp', ["highcharts-ng"]);
+
+myapp.controller('myctrl', function ($scope,request) {
+
+    $scope.click = function () {
+      var url = "https://envirocar.org/api/stable/tracks/56d9dc80e4b0b5e23789124a";
+      request.get(url).then(function (data) {
+        console.log(data.data);
+        //now we have access to data. Let us generate graphs for this data.
+      //  $scope.data = data;
+        var rnd = [];
+        console.log(data.data.features);
+        var len_data=data.data.features.length;
+
+        // the no. of data points that need to be plotted.
+        for(var i=0;i<len_data;i++)
+        {
+            console.log(data.data.features[i].properties.time);
+          var date=data.data.features[i].properties.time;
+          var dateObj=Date.parse(date);
+          console.log(dateObj);
+          var speed = data.data.features[i].properties.phenomenons.Speed.value;
+          console.log(speed)
+          rnd.push([dateObj,Number(speed)]);
+          console.log(rnd)
+        }
+        $scope.chartConfig.series.push({
+            data: rnd,
+            name: 'Speed',
+            lineWidth: 3,
+            zones: [{
+               value: 30,
+               color: '#0099ff'
+           }, {
+               value: 60,
+               color: '#D7DF01'
+           }, {
+               value: 90,
+               color: '#009900'
+           }, {
+               value: 120,
+               color: '#ff9900'
+           }, {
+               value: 160,
+               color: '#cc3300'
+           }]
+        });
+        var rnd=[];
+        for(var i=0;i<len_data;i++)
+        {
+            console.log(data.data.features[i].properties.time);
+          var date=data.data.features[i].properties.time;
+          var dateObj=Date.parse(date);
+          console.log(dateObj);
+          var speed = data.data.features[i].properties.phenomenons.CO2.value;
+          console.log(speed)
+          rnd.push([dateObj,Number(speed)]);
+          console.log(rnd)
+        }
+        $scope.chartConfig.series.push({
+            data: rnd,
+            name:'CO2',
+            lineWidth: 3
+        });
+      });
+    };
+/*    $scope.removeRandomSeries = function () {
+        var seriesArray = $scope.chartConfig.series
+        var rndIdx = Math.floor(Math.random() * seriesArray.length);
+        seriesArray.splice(rndIdx, 1)
+    }
+
+*/
+   $scope.swapChartType = function () {
+        if (this.chartConfig.options.chart.type === 'line') {
+            this.chartConfig.options.chart.type = 'bar'
+        } else {
+            this.chartConfig.options.chart.type = 'line'
+            this.chartConfig.options.chart.zoomType = 'x'
+        }
+    }
+
+
+    $scope.toggleLoading = function () {
+        this.chartConfig.loading = !this.chartConfig.loading
+    }
+
+    $scope.chartConfig = {
+        options: {
+            chart: {
+                type: 'line',
+                  zoomType: 'x',
+                    backgroundColor: '#F1FBFC',
+            }
+        },
+
+        series: [],
+       xAxis:{
+          type: 'datetime',
+          title: {text: 'Time'}
+        },
+        title: {
+            text: 'Hello'
+        },
+
+        loading: false,
+        useHighStocks: true
+    }
+
+});
+myapp.factory('request', function($http) {
+  var get = function(url) {
+    return $http.get(url).success(function(data) {
+      console.log(data)
+      console.log(data.features)
+      return data;
+    });
+  }
+
+  return {
+    get: get
+  }
+});
+</script>
+</head>
+<body>
+    <div ng-controller="myctrl">
+        <div class="span12">
+            <input ng-model="chartConfig.title.text">
+           <button ng-click="click()">Get DATA</button>
+           <button ng-click="swapChartType()">Line/Bar</button>
+         </div>
+        <div class="row">
+            <highchart id="chart1" config="chartConfig" class="span10"></highchart>
+        </div>
+    </div>
+</html>
