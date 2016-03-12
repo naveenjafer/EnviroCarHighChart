@@ -15,8 +15,38 @@
 var myapp = angular.module('myapp', ["highcharts-ng"]);
 
 myapp.controller('myctrl', function ($scope,request) {
-
+  var color=['#00cc00','#cccc00','#ffff00','#ff9933','#ff3300','#440044'];
+  var rangeSpeed=[30,60,90,120,160];
+  var rangeCO2=[6,11,17,23,29];
+  var rangeMAF=[7,15,22,30,37];
+  var rangepressure=[19,38,56,75,94];
+  var rangeRpm=[612,1223,1835,2446,3058];
+  var rangetemp=[4,8,11,15,19];
     $scope.click = function (phenom) {
+      var objrange;
+      switch(phenom)
+      {
+        case "Speed":
+          objrange=rangeSpeed;
+          break;
+        case "CO2":
+          objrange=rangeCO2;
+          break;
+        case "Calculated MAF":
+          objrange=rangeMAF;
+          break;
+        case "Intake Temperature":
+          objrange=rangetemp;
+          break;
+        case "Intake Pressure":
+          objrange=rangepressure;
+          break;
+        case "Rpm":
+          objrange=rangeRpm;
+          break;
+
+
+      }
       var url = "https://envirocar.org/api/stable/tracks/56d9dc80e4b0b5e23789124a";
       request.get(url).then(function (data) {
         console.log(data.data);
@@ -43,23 +73,23 @@ myapp.controller('myctrl', function ($scope,request) {
             name: phenom,
             lineWidth: 3,
             zones: [{
-               value: 30,
-               color: '#0099ff'
+               value: objrange[0],
+               color: color[0]
            }, {
-               value: 60,
-               color: '#D7DF01'
+               value: objrange[1],
+               color: color[1]
            }, {
-               value: 90,
-               color: '#009900'
+               value: objrange[2],
+               color: color[2]
            }, {
-               value: 120,
-               color: '#ff9900'
+               value: objrange[3],
+               color: color[3]
            }, {
-               value: 160,
-               color: '#cc3300'
+               value: objrange[4],
+               color: color[4]
            },
          {
-           color: '#440044'
+           color: color[5]
          }]
         });
         /*
@@ -107,7 +137,7 @@ myapp.controller('myctrl', function ($scope,request) {
             this.chartConfig.options.chart.zoomType = 'x'
         }
     }
-    $scope.sizes = [ {code: 1, name: 'Speed'}, {code: 2, name: 'CO2'}, {code:3, name:'Rpm'}, {code:4, name:'Intake Pressure'}, {code:5,name:'Engine Load'},{code:6, name:'Consumption'},{code:7, name:'Calculated MAF'}];
+    $scope.sizes = [ {code: 1, name: 'Speed'}, {code: 2, name: 'CO2'}, {code:3, name:'Rpm'}, {code:4, name:'Intake Pressure'}, {code:5,name:'Intake Temperature'},{code:6, name:'Calculated MAF'}];
     $scope.item1 = [{code:1,name: 'Speed'}];
   $scope.update = function() {
     console.log($scope.item.code, $scope.item.name)
