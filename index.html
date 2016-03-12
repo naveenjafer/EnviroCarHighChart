@@ -16,7 +16,7 @@ var myapp = angular.module('myapp', ["highcharts-ng"]);
 
 myapp.controller('myctrl', function ($scope,request) {
 
-    $scope.click = function () {
+    $scope.click = function (phenom) {
       var url = "https://envirocar.org/api/stable/tracks/56d9dc80e4b0b5e23789124a";
       request.get(url).then(function (data) {
         console.log(data.data);
@@ -25,7 +25,7 @@ myapp.controller('myctrl', function ($scope,request) {
         var rnd = [];
         console.log(data.data.features);
         var len_data=data.data.features.length;
-
+        $('#chart1').show();
         // the no. of data points that need to be plotted.
         for(var i=0;i<len_data;i++)
         {
@@ -33,14 +33,14 @@ myapp.controller('myctrl', function ($scope,request) {
           var date=data.data.features[i].properties.time;
           var dateObj=Date.parse(date);
           console.log(dateObj);
-          var speed = data.data.features[i].properties.phenomenons.Speed.value;
+          var speed = data.data.features[i].properties.phenomenons[phenom].value;
           console.log(speed)
           rnd.push([dateObj,Number(speed)]);
           console.log(rnd)
         }
         $scope.chartConfig.series.push({
             data: rnd,
-            name: 'Speed',
+            name: phenom,
             lineWidth: 3,
             zones: [{
                value: 30,
@@ -57,8 +57,12 @@ myapp.controller('myctrl', function ($scope,request) {
            }, {
                value: 160,
                color: '#cc3300'
-           }]
+           },
+         {
+           color: '#440044'
+         }]
         });
+        /*
         var rnd=[];
         for(var i=0;i<len_data;i++)
         {
@@ -76,15 +80,25 @@ myapp.controller('myctrl', function ($scope,request) {
             name:'CO2',
             lineWidth: 3
         });
+        */
       });
     };
-/*    $scope.removeRandomSeries = function () {
-        var seriesArray = $scope.chartConfig.series
-        var rndIdx = Math.floor(Math.random() * seriesArray.length);
-        seriesArray.splice(rndIdx, 1)
+    $scope.remove = function (phenom) {
+        var seriesArray = $scope.chartConfig.series;
+        for(var i=0;i<seriesArray.length;i++)
+        {
+          console.log(seriesArray[i].name+"is name");
+          console.log(phenom+"is selected phenom");
+          if(seriesArray[i].name==phenom)
+          {
+            seriesArray.splice(i,1)
+          }
+        }
+      //  var rndIdx = Math.floor(Math.random() * seriesArray.length);
+      //  seriesArray.splice(rndIdx, 1)
     }
 
-*/
+
    $scope.swapChartType = function () {
         if (this.chartConfig.options.chart.type === 'line') {
             this.chartConfig.options.chart.type = 'bar'
@@ -93,6 +107,13 @@ myapp.controller('myctrl', function ($scope,request) {
             this.chartConfig.options.chart.zoomType = 'x'
         }
     }
+    $scope.sizes = [ {code: 1, name: 'Speed'}, {code: 2, name: 'CO2'}, {code:3, name:'Rpm'}, {code:4, name:'Intake Pressure'}, {code:5,name:'Engine Load'},{code:6, name:'Consumption'},{code:7, name:'Calculated MAF'}];
+    $scope.item1 = [{code:1,name: 'Speed'}];
+  $scope.update = function() {
+    console.log($scope.item.code, $scope.item.name)
+  //  click($scope.item.name);
+  //  console.log("call was successful");
+  }
 
 
     $scope.toggleLoading = function () {
@@ -103,8 +124,8 @@ myapp.controller('myctrl', function ($scope,request) {
         options: {
             chart: {
                 type: 'line',
-                  zoomType: 'x',
-                    backgroundColor: '#F1FBFC',
+                  zoomType: 'x'
+
             }
         },
 
@@ -114,7 +135,7 @@ myapp.controller('myctrl', function ($scope,request) {
           title: {text: 'Time'}
         },
         title: {
-            text: 'Hello'
+            text: 'A Simple EnviroCar analysis'
         },
 
         loading: false,
@@ -141,11 +162,16 @@ myapp.factory('request', function($http) {
     <div ng-controller="myctrl">
         <div class="span12">
             <input ng-model="chartConfig.title.text">
-           <button ng-click="click()">Get DATA</button>
+        <!--   <button ng-click="click()">Get DATA</button> -->
            <button ng-click="swapChartType()">Line/Bar</button>
+           <p>Select any of these parmaters to plot them(To select multiple, click one by one)</p>
+            <select id = "to select" ng-options="size as size.name for size in sizes " ng-model="item1" ng-change="click(item1.name)"></select>
+            <p>Select one of these paramters to remove them</p>
+            <select id = "to remove" ng-options="size as size.name for size in sizes " ng-model="item2" ng-change="remove(item2.name)"></select>
+
          </div>
         <div class="row">
-            <highchart id="chart1" config="chartConfig" class="span10"></highchart>
+            <highchart id="chart1" config="chartConfig" class="span10" style="display:none;width:100%;height:500px"></highchart>
         </div>
     </div>
 </html>
